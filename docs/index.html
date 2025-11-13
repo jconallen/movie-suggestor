@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"
+        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.5.3/papaparse.min.js"
+        integrity="sha256-NVP7i99bgATOVTHmgn6ByLNOezmSZ3lndUVEBk6XsBY=" crossorigin="anonymous"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/luxon@3.7.2/build/global/luxon.min.js"
+        integrity="sha256-UWxf6lyCvfH7XEcrmq/cqc2m3IBrLBLOnWLC4Pw0gQQ=" crossorigin="anonymous"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/async@3.2.6/dist/async.min.js"
+        integrity="sha256-uDzWtmm1K/XBN81NsKQ3dxp0KF3jz7XPO8F3WAA0Whg=" crossorigin="anonymous"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/idb@8.0.3/build/umd.min.js"></script>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q"
+        crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico?">
+
+</head>
+
+<body>
+    <div id="navbar"></div>
+
+    <img src="https://image.tmdb.org/t/p/original/vzmL6fP7aPKNKPRTFnZmiUfciyV.jpg" height="240">
+
+    <div class="container">
+        <h2>
+            Tell me what you like..
+        </h2>
+
+        <div class="container">
+            <div class="container border" style="margin:10px;">
+                <p>Do you like popular movies?</p>
+                <div id="popular" class="btn-group" data-toggle="buttons">
+                    <label class="btn btn-default blue">
+                        <input type="radio" class="toggle" value="0"> Not really
+                    </label>
+                    <label class="btn btn-default blue">
+                        <input type="radio" class="toggle" value="1"> A little
+                    </label>
+                    <label class="btn btn-default blue">
+                        <input type="radio" class="toggle" value="2"> A lot
+                    </label>
+                </div>
+            </div>
+
+            <div class="container border" style="margin:10px;">
+                <p>Do you like foreign language movies?</p>
+                <div id="foriegn" class="btn-group" data-toggle="buttons">
+                    <label class="btn btn-default blue">
+                        <input type="radio" class="toggle" value="0"> No
+                    </label>
+                    <label class="btn btn-default blue">
+                        <input type="radio" class="toggle" value="1"> Sometimes
+                    </label>
+                    <label class="btn btn-default blue">
+                        <input type="radio" class="toggle" value="1"> I love'em
+                    </label>
+                </div>
+            </div>
+
+            <div class="container border" style="margin:10px;">
+                <p>What is your favorite decade(s) for movies?</p>
+                <div id="foreign" class="btn-group" data-toggle="buttons">
+                    <label class="btn btn-default blue">
+                        <input type="radio" class="toggle" value="0"> Before 1950
+                    </label>
+                    <label class="btn btn-default blue">
+                        <input type="radio" class="toggle" value="1"> 1950s to 1970s
+                    </label>
+                    <label class="btn btn-default blue">
+                        <input type="radio" class="toggle" value="1"> 1980s and 90s
+                    </label>
+                    <label class="btn btn-default blue">
+                        <input type="radio" class="toggle" value="1"> 2000 to 2010
+                    </label>
+                    <label class="btn btn-default blue">
+                        <input type="radio" class="toggle" value="1"> 2010 to 2020
+                    </label>
+                    <label class="btn btn-default blue">
+                        <input type="radio" class="toggle" value="1"> 2020 to present
+                    </label>
+                </div>
+            </div>
+
+            <div>
+                <button type="button" class="btn btn-primary" onclick="makeSuggestions()">Give me suggestions</button>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div id="dessertModal" class="modal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">I think you'll like these...</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- code -->
+    <script src="js/utils.js"></script>
+
+    <script type="text/javascript">
+
+        var movieData = [];
+
+        const posterPathBase = "https://image.tmdb.org/t/p/original";
+
+        $(function () {
+            $("#navbar").load("navbar.html");
+        });
+
+        window.addEventListener("load", async (event) => {
+            fetch('moviedata.json')
+                .then(response => response.json())
+                .then(processData)
+                //.catch(error => alert('Error fetching JSON:', error));
+        });
+
+        function processData(data){
+            movieData = data;
+        }
+
+        function makeSuggestions() {
+            var popular = $('#popular input:radio:checked').val();
+            console.log(popular);
+        }
+
+
+    </script>
+</body>
+
+</html>
