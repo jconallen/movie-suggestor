@@ -31,7 +31,8 @@
 <body>
     <div id="navbar"></div>
 
-    <img src="https://image.tmdb.org/t/p/original/vzmL6fP7aPKNKPRTFnZmiUfciyV.jpg" height="240">
+    <!-- <img src="https://image.tmdb.org/t/p/original/vzmL6fP7aPKNKPRTFnZmiUfciyV.jpg" height="240"> -->
+    <img src="images/hollywood_sign.jpg" height="180">
 
     <div class="container">
         <h2>
@@ -56,7 +57,7 @@
 
             <div class="container border" style="margin:10px;">
                 <p>Do you like foreign language movies?</p>
-                <div id="foriegn" class="btn-group" data-toggle="buttons">
+                <div id="foreign" class="btn-group" data-toggle="buttons">
                     <label class="btn btn-default blue">
                         <input type="radio" class="toggle" value="0"> No
                     </label>
@@ -71,25 +72,14 @@
 
             <div class="container border" style="margin:10px;">
                 <p>What is your favorite decade(s) for movies?</p>
-                <div id="foreign" class="btn-group" data-toggle="buttons">
-                    <label class="btn btn-default blue">
-                        <input type="radio" class="toggle" value="0"> Before 1950
-                    </label>
-                    <label class="btn btn-default blue">
-                        <input type="radio" class="toggle" value="1"> 1950s to 1970s
-                    </label>
-                    <label class="btn btn-default blue">
-                        <input type="radio" class="toggle" value="1"> 1980s and 90s
-                    </label>
-                    <label class="btn btn-default blue">
-                        <input type="radio" class="toggle" value="1"> 2000 to 2010
-                    </label>
-                    <label class="btn btn-default blue">
-                        <input type="radio" class="toggle" value="1"> 2010 to 2020
-                    </label>
-                    <label class="btn btn-default blue">
-                        <input type="radio" class="toggle" value="1"> 2020 to present
-                    </label>
+                <div id="decades" class="form-check">
+                </div>
+            </div>
+
+            <div class="container border" style="margin:10px;">
+                <p>What are your favorite generes?</p>
+                <div id="genres" class="form-check">
+
                 </div>
             </div>
 
@@ -124,6 +114,7 @@
     <script type="text/javascript">
 
         var movieData = [];
+        var genres = [];
 
         const posterPathBase = "https://image.tmdb.org/t/p/original";
 
@@ -132,19 +123,95 @@
         });
 
         window.addEventListener("load", async (event) => {
-            fetch('moviedata.json')
+            await fetch('data/moviedata.json')
                 .then(response => response.json())
                 .then(processData)
-                //.catch(error => alert('Error fetching JSON:', error));
+            //.catch(error => alert('Error fetching JSON:', error));
+            await fetch('data/genres.json')
+                .then(response => response.json())
+                .then(processGenres)
+            // populate decades options
+            populateDecades();
         });
 
-        function processData(data){
+        function populateDecades(){
+            for( var year=1930; year<=2020; year+=10){
+                var input = 
+                `<div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="decade_${year}" value="${year}">
+                    <label class="form-check-label" for="inlineCheckbox1">${year}s</label>
+                </div>`;
+                $('#decades').append(input);
+            }
+        }
+
+        function processData(data) {
             movieData = data;
+            console.log("Loaded " + data.length + " movie records");
+        }
+
+        function processGenres(data) {
+            genres = data;
+            console.log("Loaded " + data.length + " generes");
+            // populate generes
+            for( var i=0; i<genres.length; i++){
+                var genre = genres[i];
+                var input = 
+                `<div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="genre_${i}" value="${i}">
+                    <label class="form-check-label" for="inlineCheckbox1">${genre}</label>
+                </div>`;
+                $('#genres').append(input);
+            }
         }
 
         function makeSuggestions() {
             var popular = $('#popular input:radio:checked').val();
-            console.log(popular);
+            var foreign = $('#foreign input:radio:checked').val();
+            console.log(`Popular: ${popular} Foreign: ${foreign}`);
+            // get selected genres
+            var selectedGenres = [];
+            var msg = "Selected genres: "
+            for( var i=0; i<genres.length; i++){
+                var genre = $('#genre_'+i).prop('checked');
+                if( genre ) {
+                    selectedGenres.push( genres[i] );
+                    msg += " " + genres[i];
+                }
+            }
+            console.log( msg );
+
+            // get fav decades   
+            var selectedDecades = [];
+            var msg = "Selected decades: "
+            for( var year=1930; year<=2020; year+=10){
+                var decade = $('#decade_'+year).prop('checked');
+                if( decade ) {
+                    selectedDecades.push( year );
+                    msg += " " + year;
+                }
+            }
+            console.log( msg );
+
+            sortOnCriteria( foreign, popular, selectedGenres, decades );
+        }
+
+
+        function sortOnCriteria(foreign, popular, selectedGenres, decades){
+            // first find all records that match exactly the genres
+            var favorites = [];
+            for( var i=0; i<movieData.length; i++ ){
+                var movie = movieData[i];
+                for( var g=0; g<selectedGenres.length; g++ ){
+                    if( selectedGenres.includes(movie.genres[g]) ){
+                        favorites.push( movie );
+                        break;
+                    }
+                }
+            }
+            console.log( "favorites " + favorites.length );
+
+
         }
 
 

@@ -31,9 +31,6 @@ for (var i = 0; i < json.data.length; i++) {
                 if( !generes.includes(genere) ) generes.push(genere);
             }
             if (generesObjList.length > 0) {
-                var revenue = parseInt(data.revenue);
-                if (revenue < minRevenue) minRevenue = revenue;
-                if (revenue > maxRevenue) maxRevenue = revenue;
 
                 var popularity = parseFloat(data.popularity);
                 if (popularity < minPopularity) minPopularity = popularity;
@@ -52,7 +49,6 @@ for (var i = 0; i < json.data.length; i++) {
                     "language": data.original_language,
                     "popularity": parseFloat(data.popularity),
                     "posterPath": data.poster_path,
-                    "revenue": revenue,
                     "runtime": runtime,
                     "title": data.title,
                     "genres": movieGeneres,
