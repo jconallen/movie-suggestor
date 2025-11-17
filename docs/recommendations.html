@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"
+        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.5.3/papaparse.min.js"
+        integrity="sha256-NVP7i99bgATOVTHmgn6ByLNOezmSZ3lndUVEBk6XsBY=" crossorigin="anonymous"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/luxon@3.7.2/build/global/luxon.min.js"
+        integrity="sha256-UWxf6lyCvfH7XEcrmq/cqc2m3IBrLBLOnWLC4Pw0gQQ=" crossorigin="anonymous"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/async@3.2.6/dist/async.min.js"
+        integrity="sha256-uDzWtmm1K/XBN81NsKQ3dxp0KF3jz7XPO8F3WAA0Whg=" crossorigin="anonymous"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/idb@8.0.3/build/umd.min.js"></script>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q"
+        crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico?">
+
+</head>
+
+<body>
+    <div id="navbar"></div>
+
+    <!-- <img src="https://image.tmdb.org/t/p/original/vzmL6fP7aPKNKPRTFnZmiUfciyV.jpg" height="240"> -->
+    <!-- <img src="images/hollywood_sign.jpg" height="180"> -->
+
+    <div class="container">
+        <h2>
+            My recommendations for you are:
+        </h2>
+
+        <div class="container">
+            <div id="recommendations" class="container border rounded" style="margin:10px; margin:10px;">
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- code -->
+    <script src="js/utils.js"></script>
+
+    <script type="text/javascript">
+
+        var recommendations = null;
+
+        const posterPathBase = "https://image.tmdb.org/t/p/original";
+
+        $(function () {
+            $("#navbar").load("navbar.html");
+        });
+
+        window.addEventListener("load", async (event) => {
+            populateMovies();
+        });
+
+        async function checkImage(url) {
+            return new Promise(async function (resolve, reject) {
+                var request = new XMLHttpRequest();
+                request.open("GET", url, true);
+                request.send();
+                request.onload = function () {
+                    status = request.status;
+                    if (request.status == 200) //if(statusText == OK)
+                    {
+                        console.log("image exists");
+                        resolve(true);
+                    } else {
+                        console.log("image doesn't exist");
+                        resolve(false);
+                    }
+                }
+                
+            });
+        }
+
+        async function buildRecommendation(movie) {
+            var genreStr = "";
+            for (g = 0; g < movie.genres.length; g++) {
+                if (g > 0) genreStr += ", ";
+                genreStr += movie.genres[g];
+            }
+            var posterUrl = "images/Film_stock_icon.svg";
+            var exists = await checkImage(posterPathBase + movie.posterPath);
+            if ( exists && movie.posterPath ) {
+                posterUrl = posterPathBase + movie.posterPath;
+            }
+
+            var div = `
+                <div class="container border rounded" style="margin:10px; margin:10px;">
+                    <div class="row">
+                        <div class="col-3"> <img class="img-fluid" src="${posterUrl}"> </div>
+                        <div class="col-8">
+                            <h3>${movie.title} (${movie.releaseYear})</h3>
+                            <p>Running time ${movie.runtime}m</p>
+                            <p>Genres: ${genreStr}</p>
+                            <p>${movie.overview}</p>
+                            <p><a href="https://www.imdb.com/title/${movie.imdb_id}"><img src="images/imdb.svg" height="24"></a></p>
+                        </div>
+                    </div>
+                </div>`;
+            $('#recommendations').append(div);
+        }
+
+        async function populateMovies() {
+            var recommendationsStr = localStorage.getItem('recommendations');
+            recommendations = JSON.parse(recommendationsStr);
+            async.eachSeries(recommendations, buildRecommendation)
+        }
+
+
+    </script>
+</body>
+
+</html>

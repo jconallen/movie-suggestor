@@ -32,7 +32,7 @@
     <div id="navbar"></div>
 
     <!-- <img src="https://image.tmdb.org/t/p/original/vzmL6fP7aPKNKPRTFnZmiUfciyV.jpg" height="240"> -->
-    <img src="images/hollywood_sign.jpg" height="180">
+    <!-- <img src="images/hollywood_sign.jpg" height="180"> -->
 
     <div class="container">
         <h2>
@@ -42,33 +42,56 @@
         <div class="container">
             <div class="container border" style="margin:10px;">
                 <p>Do you like popular movies?</p>
-                <div id="popular" class="btn-group" data-toggle="buttons">
-                    <label class="btn btn-default blue">
-                        <input type="radio" class="toggle" value="0"> Not really
-                    </label>
-                    <label class="btn btn-default blue">
-                        <input type="radio" class="toggle" value="1"> A little
-                    </label>
-                    <label class="btn btn-default blue">
-                        <input type="radio" class="toggle" value="2"> A lot
-                    </label>
+                <div class="btn-group" id="popular" data-toggle="buttons">
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="popular"  value="0">
+                    <label class="form-check-label" for="popular_not">Not at all</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="popular" value="0.5">
+                    <label class="form-check-label" for="popular_little">A little</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="popular"  value="1">
+                    <label class="form-check-label" for="popular_yes">Absolutely</label>
+                </div>
+                </div>
+            </div>
+            <div class="container border" style="margin:10px;">
+                <p>Do you like big-budget movies?</p>
+                <div class="btn-group" id="budget" data-toggle="buttons">
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="budget"  value="0">
+                    <label class="form-check-label" for="budget_not">Not at all</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="budget"  value="0.5">
+                    <label class="form-check-label" for="budget_little">A little</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="budget"  value="1">
+                    <label class="form-check-label" for="budget_yes">The bigger the better</label>
+                </div>
+                </div>
+            </div>
+            <div class="container border" style="margin:10px;">
+                <p>Do you like foreign language movies?</p>
+                <div class="btn-group" id="foreign" data-toggle="buttons">
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="foreign" id="foreign_not" value="0">
+                    <label class="form-check-label" for="foreign_not">Not at all</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="foreign" id="foreign_little" value="0.5">
+                    <label class="form-check-label" for="foreign_little">A little</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="foreign" id="foreign_yes" value="1">
+                    <label class="form-check-label" for="foreign_yes">Oui tout à fait</label>
+                </div>
                 </div>
             </div>
 
-            <div class="container border" style="margin:10px;">
-                <p>Do you like foreign language movies?</p>
-                <div id="foreign" class="btn-group" data-toggle="buttons">
-                    <label class="btn btn-default blue">
-                        <input type="radio" class="toggle" value="0"> No
-                    </label>
-                    <label class="btn btn-default blue">
-                        <input type="radio" class="toggle" value="1"> Sometimes
-                    </label>
-                    <label class="btn btn-default blue">
-                        <input type="radio" class="toggle" value="1"> I love'em
-                    </label>
-                </div>
-            </div>
 
             <div class="container border" style="margin:10px;">
                 <p>What is your favorite decade(s) for movies?</p>
@@ -79,7 +102,6 @@
             <div class="container border" style="margin:10px;">
                 <p>What are your favorite generes?</p>
                 <div id="genres" class="form-check">
-
                 </div>
             </div>
 
@@ -115,8 +137,9 @@
 
         var movieData = [];
         var genres = [];
-
-        const posterPathBase = "https://image.tmdb.org/t/p/original";
+        var maxDecade = 2020;
+        var minDecade = 1930;
+        var decadeOptions = 1 + (maxDecade - minDecade) / 10;
 
         $(function () {
             $("#navbar").load("navbar.html");
@@ -135,7 +158,7 @@
         });
 
         function populateDecades(){
-            for( var year=1930; year<=2020; year+=10){
+            for( var year=minDecade; year<=maxDecade; year+=10){
                 var input = 
                 `<div class="form-check form-check-inline">
                     <input class="form-check-input" type="checkbox" id="decade_${year}" value="${year}">
@@ -168,6 +191,7 @@
         function makeSuggestions() {
             var popular = $('#popular input:radio:checked').val();
             var foreign = $('#foreign input:radio:checked').val();
+            var budget = $('#budget input:radio:checked').val();
             console.log(`Popular: ${popular} Foreign: ${foreign}`);
             // get selected genres
             var selectedGenres = [];
@@ -179,7 +203,7 @@
                     msg += " " + genres[i];
                 }
             }
-            console.log( msg );
+            //console.log( msg );
 
             // get fav decades   
             var selectedDecades = [];
@@ -191,29 +215,92 @@
                     msg += " " + year;
                 }
             }
-            console.log( msg );
+            //console.log( msg );
 
-            sortOnCriteria( foreign, popular, selectedGenres, decades );
+            sortOnCriteria( foreign, popular, budget, selectedGenres, selectedDecades );
         }
 
+        function rate(movie, foreign, popularity, budget, selectedGenres, decades){
+            var rating = {};
 
-        function sortOnCriteria(foreign, popular, selectedGenres, decades){
-            // first find all records that match exactly the genres
-            var favorites = [];
-            for( var i=0; i<movieData.length; i++ ){
-                var movie = movieData[i];
-                for( var g=0; g<selectedGenres.length; g++ ){
-                    if( selectedGenres.includes(movie.genres[g]) ){
-                        favorites.push( movie );
-                        break;
-                    }
+            rating.popularity = Math.abs(movie.popularity-popularity);
+            rating.genres = 0;
+            for( var g=0; g<genres.length; g++ ){
+                var genre = genres[g];
+                if( movie.genres.includes(genre) && selectedGenres.includes(genre) ){
+                    rating.genres += 1/selectedGenres.length;
+                    // console.log( `${rating.genres} - ${movie.title}`);
                 }
             }
-            console.log( "favorites " + favorites.length );
+            rating.decade = 0;
+            for( var i=0; i<decades.length; i++ ){
+                var decade = decades[i];
+                if( decade <= movie.releaseYear && movie.releaseYear < decade+10){
+                    rating.decade += 1/decadeOptions;
+                }
+            }
+            if( foreign && movie.language != 'en' ) {
+                rating.foreign = foreign;
+            } else {
+                rating.foreign = 0;
+            }
 
-
+            rating.popularity = popularity * movie.popularity;
+            return rating;
+            // console.log( JSON.stringify(rating));
         }
 
+        var movieRatings = [];
+        
+        function sortOnCriteria(foreign, popular, budget, selectedGenres, selectedDecades){
+            // first find all records that match exactly the genres
+            var max = {
+                "genres": 0,
+                "popularity": 0,
+                "decade": 0,
+                "foreign": 0,
+                "decade": 0,
+                "budget": 0,
+                "decade": 0
+            };
+            var ids = Object.keys(movieData);
+            for( var i=0; i<ids.length; i++ ){
+                var movie = movieData[ids[i]];
+                var rating = rate(movie,foreign, popular, budget, selectedGenres, selectedDecades);
+                //console.log( movie.title + " " + JSON.stringify(rating));
+
+                var totalRating = rating.genres * 10 + rating.popularity * 10 + rating.decade * 100 + rating.foreign * 5;
+                var ratingObj = { "imdb_id": movie.imdb_id, "rating": totalRating }
+                movieRatings.push(ratingObj);
+
+                var keys = Object.keys(max);
+                for( var k=0; k<keys.length; k++){
+                    var key = keys[k];
+                    if( max[key] < rating[key] ) max[key] = rating[key];
+                }
+            }
+
+            var selectedMovies = [];
+            var sortedRatings = movieRatings.sort(compareRatings);
+            for( var i=0; i<20; i++ ){
+                var rating = sortedRatings[i].rating;
+                var imdb_id = sortedRatings[i].imdb_id;
+                var movie = movieData[imdb_id];
+                selectedMovies.push( movie );
+                console.log( `${movie.title} (${movie.releaseYear}): ${rating}` );
+            }
+
+            localStorage.setItem('recommendations', JSON.stringify(selectedMovies));
+            console.log( JSON.stringify(max));
+
+            // now redirect to recommendations page
+            window.open("recommendations.html");
+        }
+
+        function compareRatings(a, b ) {
+            return b.rating - a.rating;
+
+        }
 
     </script>
 </body>
